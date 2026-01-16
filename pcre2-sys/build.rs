@@ -38,6 +38,7 @@ fn main() {
     // this in lieu of patching config.h since it's easier.
     let mut builder = cc::Build::new();
     builder
+        .define("LINK_SIZE", "4")
         .define("PCRE2_CODE_UNIT_WIDTH", "8")
         .define("HAVE_STDLIB_H", "1")
         .define("HAVE_MEMMOVE", "1")
