@@ -1,14 +1,7 @@
 // The build for pcre2-sys currently does roughly the following:
 //
-//   1. Use the PCRE2 system library as reported by pkg-config if it exists
-//      and only if we don't explicitly want a static build.
-//   2. Otherwise, statically build PCRE2 by hand.
+//   1. Always statically build PCRE2 by hand.
 //
-// For step 1, we permit opting out of using the system library via either
-// explicitly setting the PCRE2_SYS_STATIC environment variable or if we
-// otherwise believe we want a static build (e.g., when building with MUSL).
-//
-// For step 2, we roughly follow the directions as laid out in
 // pcre2/NON-AUTOTOOLS-BUILD. It's pretty straight-forward: copy a few files,
 // set a few defines and then build it. We can get away with a pretty stripped
 // down setup here since the PCRE2 build setup also handles various command
@@ -22,17 +15,9 @@
 use std::path::PathBuf;
 
 fn main() {
-    println!("cargo:rerun-if-env-changed=PCRE2_SYS_STATIC");
-
     let target = std::env::var("TARGET").unwrap();
     // let out = PathBuf::from(std::env::var_os("OUT_DIR").unwrap());
     let upstream = PathBuf::from("upstream");
-
-    // Don't link to a system library if we want a static build.
-    let want_static = pcre2_sys_static().unwrap_or(target.contains("musl"));
-    if !want_static && pkg_config::probe_library("libpcre2-8").is_ok() {
-        return;
-    }
 
     // Set some config options. We mostly just use the default values. We do
     // this in lieu of patching config.h since it's easier.
@@ -80,21 +65,6 @@ fn main() {
         builder.debug(true);
     }
     builder.compile("libpcre2.a");
-}
-
-fn pcre2_sys_static() -> Option<bool> {
-    match std::env::var("PCRE2_SYS_STATIC") {
-        Err(_) => None,
-        Ok(s) => {
-            if s == "1" {
-                Some(true)
-            } else if s == "0" {
-                Some(false)
-            } else {
-                None
-            }
-        }
-    }
 }
 
 // On `aarch64-apple-ios` clang fails with the following error.
