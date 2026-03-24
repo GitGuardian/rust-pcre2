@@ -743,6 +743,15 @@ impl Regex {
         self.code.capture_count().expect("a valid capture count from PCRE2")
     }
 
+    /// Returns the minimum length (in subject bytes) of a string that can
+    /// match this pattern.
+    ///
+    /// This is computed by PCRE2 during compilation and accounts for all
+    /// regex features including lookaround and backreferences.
+    pub fn min_length(&self) -> usize {
+        self.code.min_length().expect("a valid min length from PCRE2")
+    }
+
     /// Returns an empty set of capture locations that can be reused in
     /// multiple calls to `captures_read` or `captures_read_at`.
     pub fn capture_locations(&self) -> CaptureLocations {
@@ -1367,6 +1376,30 @@ mod tests {
             .unwrap();
         let matched = re.find(hay.as_bytes()).unwrap().unwrap();
         assert_eq!(matched.as_bytes(), "😀👍🏼🎉".as_bytes());
+    }
+
+    #[test]
+    fn min_length_simple() {
+        let re = Regex::new(r"(?P<x>[a-f0-9]{32})").unwrap();
+        assert_eq!(re.min_length(), 32);
+    }
+
+    #[test]
+    fn min_length_with_lookaround() {
+        let re = Regex::new(r"(?<!x)(?P<x>[a-z]{10})(?=y)").unwrap();
+        assert_eq!(re.min_length(), 10);
+    }
+
+    #[test]
+    fn min_length_alternation() {
+        let re = Regex::new(r"(abc|de)").unwrap();
+        assert_eq!(re.min_length(), 2);
+    }
+
+    #[test]
+    fn min_length_with_whitespace() {
+        let re = Regex::new(r"hello world").unwrap();
+        assert_eq!(re.min_length(), 11);
     }
 
     // See: https://github.com/BurntSushi/rust-pcre2/issues/50

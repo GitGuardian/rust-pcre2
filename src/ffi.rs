@@ -240,6 +240,27 @@ impl Code {
         }
     }
 
+    /// Returns the minimum length (in subject bytes) of a string that
+    /// can match this pattern.
+    ///
+    /// This is computed by PCRE2 during compilation and accounts for all
+    /// features including lookaround, backreferences, etc.
+    pub(crate) fn min_length(&self) -> Result<usize, Error> {
+        let mut len: u32 = 0;
+        let rc = unsafe {
+            pcre2_pattern_info_8(
+                self.as_ptr(),
+                PCRE2_INFO_MINLENGTH,
+                &mut len as *mut u32 as *mut c_void,
+            )
+        };
+        if rc != 0 {
+            Err(Error::info(rc))
+        } else {
+            Ok(len as usize)
+        }
+    }
+
     /// Returns the total number of capturing groups in this regex. This
     /// includes the capturing group for the entire pattern, so that this is
     /// always 1 more than the number of syntactic groups in the pattern.
