@@ -105,5 +105,10 @@ fn enable_jit(target: &str, builder: &mut cc::Build) {
     if target.contains("apple-ios") || target.contains("apple-tvos") {
         return;
     }
+    // sljit has no WebAssembly backend, and the sandbox disallows generating
+    // executable code at runtime regardless of toolchain.
+    if target.starts_with("wasm32") || target.starts_with("wasm64") {
+        return;
+    }
     builder.define("SUPPORT_JIT", "1");
 }
