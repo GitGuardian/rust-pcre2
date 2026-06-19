@@ -109,4 +109,12 @@ fn enable_jit(target: &str, builder: &mut cc::Build) {
         return;
     }
     builder.define("SUPPORT_JIT", "1");
+
+    if target.contains("windows") {
+        // Use sljit's W^X allocator instead of the default Windows RWX
+        // allocator. RWX JIT pages can trigger Windows Defender behavioral
+        // scanning; W^X keeps JIT speed while avoiding writable+executable
+        // pages by toggling RW -> RX during compilation.
+        builder.define("SLJIT_WX_EXECUTABLE_ALLOCATOR", "1");
+    }
 }

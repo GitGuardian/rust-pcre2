@@ -242,11 +242,7 @@ impl Code {
                 &mut len as *mut u32 as *mut c_void,
             )
         };
-        if rc != 0 {
-            Err(Error::info(rc))
-        } else {
-            Ok(len as usize)
-        }
+        if rc != 0 { Err(Error::info(rc)) } else { Ok(len as usize) }
     }
 
     /// Returns the total number of capturing groups in this regex. This
