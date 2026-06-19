@@ -37,7 +37,10 @@ fn main() {
     }
     enable_jit(&target, &mut builder);
 
-    builder.include(upstream.join("src")).include(upstream.join("include"));
+    builder
+        .include(upstream.join("src"))
+        .include(upstream.join("deps"))
+        .include(upstream.join("include"));
     for result in std::fs::read_dir(upstream.join("src")).unwrap() {
         let dent = result.unwrap();
         let path = dent.path();
@@ -106,4 +109,12 @@ fn enable_jit(target: &str, builder: &mut cc::Build) {
         return;
     }
     builder.define("SUPPORT_JIT", "1");
+
+    if target.contains("windows") {
+        // Use sljit's W^X allocator instead of the default Windows RWX
+        // allocator. RWX JIT pages can trigger Windows Defender behavioral
+        // scanning; W^X keeps JIT speed while avoiding writable+executable
+        // pages by toggling RW -> RX during compilation.
+        builder.define("SLJIT_WX_EXECUTABLE_ALLOCATOR", "1");
+    }
 }
