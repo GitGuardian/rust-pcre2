@@ -194,7 +194,11 @@ impl Code {
                 &mut bytes as *mut *const u8 as *mut c_void,
             )
         };
-        if rc != 0 { Err(Error::info(rc)) } else { Ok(bytes) }
+        if rc != 0 {
+            Err(Error::info(rc))
+        } else {
+            Ok(bytes)
+        }
     }
 
     /// Returns the number of named capturing groups.
@@ -207,7 +211,11 @@ impl Code {
                 &mut count as *mut u32 as *mut c_void,
             )
         };
-        if rc != 0 { Err(Error::info(rc)) } else { Ok(count as usize) }
+        if rc != 0 {
+            Err(Error::info(rc))
+        } else {
+            Ok(count as usize)
+        }
     }
 
     /// Returns the entry size of each name in the name table.
@@ -225,7 +233,11 @@ impl Code {
                 &mut size as *mut u32 as *mut c_void,
             )
         };
-        if rc != 0 { Err(Error::info(rc)) } else { Ok(size as usize) }
+        if rc != 0 {
+            Err(Error::info(rc))
+        } else {
+            Ok(size as usize)
+        }
     }
 
     /// Returns the minimum length (in subject bytes) of a string that
@@ -242,7 +254,11 @@ impl Code {
                 &mut len as *mut u32 as *mut c_void,
             )
         };
-        if rc != 0 { Err(Error::info(rc)) } else { Ok(len as usize) }
+        if rc != 0 {
+            Err(Error::info(rc))
+        } else {
+            Ok(len as usize)
+        }
     }
 
     /// Returns the total number of capturing groups in this regex. This
@@ -257,7 +273,11 @@ impl Code {
                 &mut count as *mut u32 as *mut c_void,
             )
         };
-        if rc != 0 { Err(Error::info(rc)) } else { Ok(1 + count as usize) }
+        if rc != 0 {
+            Err(Error::info(rc))
+        } else {
+            Ok(1 + count as usize)
+        }
     }
 }
 
@@ -292,7 +312,11 @@ impl CompileContext {
     /// PCRE2_NEWLINE_NUL. Using any other value results in an error.
     pub(crate) fn set_newline(&mut self, value: u32) -> Result<(), Error> {
         let rc = unsafe { pcre2_set_newline_8(self.0, value) };
-        if rc == 0 { Ok(()) } else { Err(Error::option(rc)) }
+        if rc == 0 {
+            Ok(())
+        } else {
+            Err(Error::option(rc))
+        }
     }
 
     fn as_mut_ptr(&mut self) -> *mut pcre2_compile_context_8 {
@@ -455,17 +479,15 @@ impl MatchData {
             subject = SINGLETON;
         }
 
-        let rc = unsafe {
-            pcre2_match_8(
-                code.as_ptr(),
-                subject.as_ptr(),
-                len,
-                start,
-                options,
-                self.as_mut_ptr(),
-                self.match_context,
-            )
-        };
+        let rc = pcre2_match_8(
+            code.as_ptr(),
+            subject.as_ptr(),
+            len,
+            start,
+            options,
+            self.as_mut_ptr(),
+            self.match_context,
+        );
         if rc == PCRE2_ERROR_NOMATCH {
             Ok(false)
         } else if rc > 0 {

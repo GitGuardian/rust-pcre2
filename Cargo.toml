@@ -1,6 +1,6 @@
 [package]
 name = "pcre2"
-version = "0.2.11"  #:version
+version = "0.2.9"  #:version
 authors = ["Andrew Gallant <jamslam@gmail.com>"]
 description = "High level wrapper library for PCRE2."
 documentation = "https://docs.rs/pcre2"
@@ -10,7 +10,7 @@ readme = "README.md"
 keywords = ["pcre", "pcre2", "regex", "jit", "perl"]
 license = "Unlicense OR MIT"
 categories = ["text-processing"]
-edition = "2024"
+edition = "2021"
 
 [workspace]
 members = ["pcre2-sys"]
@@ -18,4 +18,4 @@ members = ["pcre2-sys"]
 [dependencies]
 libc = "0.2.146"
 log = "0.4.19"
-pcre2-sys = { version = "0.2.10", path = "pcre2-sys" }
+pcre2-sys = { version = "0.2.9", path = "pcre2-sys" }
