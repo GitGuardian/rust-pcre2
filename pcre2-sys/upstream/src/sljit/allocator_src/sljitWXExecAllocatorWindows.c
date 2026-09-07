@@ -56,6 +56,7 @@
 SLJIT_API_FUNC_ATTRIBUTE void* sljit_malloc_exec(sljit_uw size)
 {
 	sljit_uw *ptr;
+	DWORD oldprot;
 
 	size += sizeof(sljit_uw);
 	ptr = (sljit_uw*)VirtualAlloc(NULL, size,
@@ -63,6 +64,16 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_malloc_exec(sljit_uw size)
 
 	if (!ptr)
 		return NULL;
+
+	/* Arbitrary Code Guard lets a read/write allocation succeed but refuses
+	   the later RW -> RX transition, which sljit_update_wx_flags does not
+	   report. Probe it here so the allocation fails and the JIT compile
+	   falls back, instead of executing a non-executable page later. */
+	if (!VirtualProtect(ptr, size, PAGE_EXECUTE, &oldprot)
+	    || !VirtualProtect(ptr, size, PAGE_READWRITE, &oldprot)) {
+		VirtualFree(ptr, 0, MEM_RELEASE);
+		return NULL;
+	}
 
 	*ptr++ = size;
 
